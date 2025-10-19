@@ -16,26 +16,14 @@ export const initializeFHEVM = async (): Promise<any> => {
   }
 
   try {
-    console.log('[FHE] Loading SDK from CDN 0.2.0...');
-    const sdk: any = await import(
-      'https://cdn.zama.ai/relayer-sdk-js/0.2.0/relayer-sdk-js.js'
-    );
-    const { initSDK, createInstance } = sdk;
+    console.log('[FHE] Loading SDK from bundle...');
+    const { createInstance, initSDK, SepoliaConfig } = await import('@zama-fhe/relayer-sdk/bundle');
 
     console.log('[FHE] Initializing WASM...');
     await initSDK();
 
-    // Sepolia FHE configuration with precompiled contract addresses
-    const config = {
-      chainId: 11155111,
-      network: window.ethereum,
-      gatewayUrl: 'https://gateway.sepolia.zama.ai',
-      aclAddress: '0x50157CFfD6bBFA2DECe204a89ec419c23ef5755D',
-      kmsVerifierAddress: '0x901F8942346f7AB3a01F6D7613119Bca447Bb030'
-    };
-
-    console.log('[FHE] Creating instance with ACL and KMS verifier...');
-    fheInstance = await createInstance(config);
+    console.log('[FHE] Creating instance with SepoliaConfig...');
+    fheInstance = await createInstance(SepoliaConfig);
     console.log('[FHE] ✅ Instance initialized successfully');
 
     return fheInstance;
