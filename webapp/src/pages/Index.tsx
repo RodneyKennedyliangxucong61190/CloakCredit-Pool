@@ -40,10 +40,10 @@ const Index = () => {
         {/* Hero Section */}
         <div className="text-center mb-12 pt-8">
           <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            Privacy-First DeFi Lending
+            Where Shadows Protect Your Wealth
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Secure lending and borrowing with transparent collateralization
+            Lend, borrow, and earn - all with cryptographic privacy powered by Zama's FHE technology
           </p>
         </div>
 

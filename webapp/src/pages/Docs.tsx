@@ -1,22 +1,23 @@
 import Navbar from '@/components/Navbar';
 import { Card } from '@/components/ui/card';
-import { Shield, Lock, Code, BookOpen, Github, FileText } from 'lucide-react';
+import { Shield, Lock, Code, BookOpen, Github, Rocket, Target, Zap, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const Docs = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
       <Navbar />
-      
+
       <div className="container mx-auto px-6 pt-32 pb-20 max-w-5xl">
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold mb-4">Documentation</h1>
           <p className="text-muted-foreground text-lg">
-            Learn how to use CloakCredit-Pool's privacy-preserving lending protocol
+            Learn how to use ShadowLend's privacy-preserving lending protocol
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <Card className="p-6 hover:shadow-card transition-shadow cursor-pointer">
             <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
               <BookOpen className="w-6 h-6 text-primary" />
@@ -49,22 +50,11 @@ const Docs = () => {
             </p>
             <Button variant="outline" size="sm">Read More</Button>
           </Card>
-
-          <Card className="p-6 hover:shadow-card transition-shadow cursor-pointer">
-            <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-              <FileText className="w-6 h-6 text-accent" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">API Reference</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Complete API documentation for integration developers
-            </p>
-            <Button variant="outline" size="sm">Read More</Button>
-          </Card>
         </div>
 
         <Card className="p-8 mb-8">
           <h2 className="text-2xl font-bold mb-6">Key Features</h2>
-          
+
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-3 mb-2">
@@ -94,6 +84,103 @@ const Docs = () => {
               <p className="text-sm text-muted-foreground ml-8">
                 All smart contracts and frontend code are open source and available on GitHub for community review and contribution.
               </p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-8 mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Rocket className="w-8 h-8 text-primary" />
+            <h2 className="text-2xl font-bold">Roadmap</h2>
+          </div>
+
+          <div className="space-y-8">
+            <div className="relative pl-8 border-l-2 border-primary/20">
+              <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-background"></div>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-semibold">Phase 1: Foundation</h3>
+                <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Completed</Badge>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Deploy FHE-enabled smart contracts on Sepolia testnet</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Implement encrypted deposit and withdrawal functionality</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Launch web interface with wallet integration</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="relative pl-8 border-l-2 border-primary/20">
+              <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-accent border-4 border-background"></div>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-semibold">Phase 2: Enhanced Privacy</h3>
+                <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">In Progress</Badge>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Target className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                  <span>Add support for multiple ERC-20 token collateral</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Target className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                  <span>Implement encrypted interest rate calculations</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Target className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                  <span>Advanced liquidation mechanism with privacy protection</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="relative pl-8 border-l-2 border-primary/20">
+              <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-muted border-4 border-background"></div>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-semibold">Phase 3: Mainnet & Scale</h3>
+                <Badge variant="outline">Planned</Badge>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Zap className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <span>Security audit by leading blockchain security firms</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Zap className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <span>Deploy to Ethereum mainnet</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Zap className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <span>Cross-chain bridge integration for multi-chain support</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="relative pl-8">
+              <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-muted border-4 border-background"></div>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-semibold">Phase 4: Ecosystem Growth</h3>
+                <Badge variant="outline">Future</Badge>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Zap className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <span>Governance token launch and DAO formation</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Zap className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <span>Integration with major DeFi protocols</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Zap className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <span>Mobile app for iOS and Android</span>
+                </li>
+              </ul>
             </div>
           </div>
         </Card>
