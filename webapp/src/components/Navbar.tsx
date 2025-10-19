@@ -8,12 +8,10 @@ const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <div className="bg-gradient-primary p-2 rounded-lg shadow-glow">
-              <Shield className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <img src="/logo.svg" alt="ShadowLend Logo" className="w-10 h-10" />
             <div>
               <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                CloakCredit-Pool
+                ShadowLend
               </h1>
               <p className="text-xs text-muted-foreground">Privacy-Preserving Lending</p>
             </div>

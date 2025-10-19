@@ -1,0 +1,48 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient circle -->
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Outer circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#logoGradient)" opacity="0.1"/>
+  
+  <!-- Shield shape -->
+  <path d="M100 30 L140 50 L140 90 Q140 130 100 160 Q60 130 60 90 L60 50 Z" 
+        fill="url(#logoGradient)" 
+        filter="url(#glow)"/>
+  
+  <!-- Lock icon in center -->
+  <rect x="85" y="80" width="30" height="35" rx="3" fill="white" opacity="0.9"/>
+  <path d="M90 80 L90 70 Q90 60 100 60 Q110 60 110 70 L110 80" 
+        stroke="white" 
+        stroke-width="5" 
+        fill="none" 
+        opacity="0.9"/>
+  <circle cx="100" cy="95" r="4" fill="url(#logoGradient)"/>
+  <rect x="98" y="95" width="4" height="10" fill="url(#logoGradient)"/>
+  
+  <!-- Encryption particles -->
+  <circle cx="70" cy="60" r="3" fill="#8B5CF6" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="130" cy="70" r="3" fill="#EC4899" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="75" cy="120" r="2.5" fill="#8B5CF6" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="125" cy="115" r="2.5" fill="#EC4899" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+</svg>
