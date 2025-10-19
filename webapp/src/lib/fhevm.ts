@@ -25,14 +25,16 @@ export const initializeFHEVM = async (): Promise<any> => {
     console.log('[FHE] Initializing WASM...');
     await initSDK();
 
-    // Simplified Sepolia configuration without contract queries
+    // Sepolia FHE configuration with precompiled contract addresses
     const config = {
       chainId: 11155111,
       network: window.ethereum,
-      gatewayUrl: 'https://gateway.sepolia.zama.ai'
+      gatewayUrl: 'https://gateway.sepolia.zama.ai',
+      aclAddress: '0x50157CFfD6bBFA2DECe204a89ec419c23ef5755D',
+      kmsVerifierAddress: '0x901F8942346f7AB3a01F6D7613119Bca447Bb030'
     };
 
-    console.log('[FHE] Creating instance...');
+    console.log('[FHE] Creating instance with ACL and KMS verifier...');
     fheInstance = await createInstance(config);
     console.log('[FHE] ✅ Instance initialized successfully');
 
