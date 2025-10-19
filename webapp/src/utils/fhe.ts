@@ -1,0 +1,111 @@
+// FHE SDK utilities
+
+// Global singleton
+let fheInstance: any = null;
+let initPromise: Promise<any> | null = null;
+
+/**
+ * Sepolia network configuration
+ */
+export const SepoliaConfig = {
+  chainId: 11155111,
+  rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+  chainName: "Sepolia"
+};
+
+/**
+ * Initialize FHE SDK
+ * ✅ Will only initialize once
+ * ✅ Concurrent calls will wait for the same Promise
+ */
+export async function initializeFHE(): Promise<any> {
+  // ✅ If instance exists, return immediately
+  if (fheInstance) {
+    console.log('✅ FHE SDK already initialized (using cache)');
+    return fheInstance;
+  }
+
+  // ✅ If initializing, wait for the same Promise
+  if (initPromise) {
+    console.log('⏳ FHE SDK is initializing (waiting)');
+    return initPromise;
+  }
+
+  // 🔑 Create initialization Promise (will only execute once)
+  initPromise = (async () => {
+    try {
+      console.log('🔄 Starting FHE SDK initialization...');
+      const startTime = performance.now();
+
+      const w = window as any;
+      if (!w.relayerSDK) {
+        throw new Error('FHE SDK not loaded, please check if index.html includes relayer-sdk-js.js script');
+      }
+
+      console.log('✅ Using SDK loaded from CDN');
+
+      // 🔑 Key optimization: avoid duplicate WASM initialization
+      if (w.relayerSDK.__initialized__ !== true) {
+        console.log('🔄 Initializing WASM...');
+        await w.relayerSDK.initSDK();
+        w.relayerSDK.__initialized__ = true;
+        console.log('✅ WASM initialization complete');
+      } else {
+        console.log('✅ WASM already initialized (skipped)');
+      }
+
+      fheInstance = await w.relayerSDK.createInstance(SepoliaConfig);
+
+      const endTime = performance.now();
+      console.log(`✅ FHE SDK initialization complete, time: ${(endTime - startTime).toFixed(0)}ms`);
+
+      return fheInstance;
+    } catch (error) {
+      console.error('❌ FHE SDK initialization failed:', error);
+      initPromise = null; // Reset to allow retry
+      throw error;
+    }
+  })();
+
+  return await initPromise;
+}
+
+/**
+ * Get FHE instance (auto-initialize if not initialized)
+ */
+export async function getFHEInstance(): Promise<any> {
+  return await initializeFHE();
+}
+
+/**
+ * Standard flow to encrypt a single uint64 value
+ */
+export async function encryptValue(
+  value: bigint,
+  contractAddress: string,
+  userAddress: string
+): Promise<{ handle: string; proof: string }> {
+  const fhe = await getFHEInstance();
+
+  const input = fhe.createEncryptedInput(contractAddress, userAddress);
+
+  // Encrypt uint64 value
+  input.add64(value);
+
+  // Generate handle and proof
+  const { handles, inputProof } = await input.encrypt();
+
+  return {
+    handle: handles[0],
+    proof: inputProof
+  };
+}
+
+/**
+ * Reset FHE instance (for testing or forced reload)
+ */
+export function resetFHEInstance(): void {
+  fheInstance = null;
+  initPromise = null;
+  console.log('🔄 FHE instance has been reset');
+}

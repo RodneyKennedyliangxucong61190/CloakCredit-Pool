@@ -1,0 +1,321 @@
+import { useAccount } from 'wagmi';
+import { useState, useEffect } from 'react';
+import { Contract } from 'ethers';
+import { useEthersSigner } from '../hooks/useEthersSigner';
+import { initializeFHEVM, encryptUint64 } from '../lib/fhevm';
+import { LENDING_POOL_ADDRESS, LENDING_POOL_ABI } from '../config/contracts';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { ArrowDownToLine, ArrowUpFromLine, Info } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+const DepositWithdraw = () => {
+  const { address } = useAccount();
+  const signer = useEthersSigner();
+  const { toast } = useToast();
+
+  const [depositAmount, setDepositAmount] = useState('0.01');
+  const [withdrawAmount, setWithdrawAmount] = useState('0.01');
+  const [loading, setLoading] = useState(false);
+  const [fheReady, setFheReady] = useState(false);
+  const [activeOperation, setActiveOperation] = useState<'deposit' | 'withdraw' | null>(null);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await initializeFHEVM();
+        setFheReady(true);
+        console.log('✅ FHE initialized and ready');
+      } catch (error) {
+        console.error('❌ Failed to initialize FHE:', error);
+        toast({
+          title: 'FHE Initialization Failed',
+          description: 'Please refresh the page and try again',
+          variant: 'destructive',
+        });
+      }
+    };
+    init();
+  }, [toast]);
+
+  const depositOrWithdraw = async (kind: 'deposit' | 'withdraw') => {
+    if (!fheReady) {
+      toast({
+        title: 'FHE SDK Not Ready',
+        description: 'Encryption service is still initializing. Please wait...',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!address) {
+      toast({
+        title: 'Wallet Not Connected',
+        description: 'Please connect your wallet first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!signer) {
+      toast({
+        title: 'Signer Not Available',
+        description: 'Wallet signer not available. Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!LENDING_POOL_ADDRESS || LENDING_POOL_ADDRESS === '0x0000000000000000000000000000000000000000') {
+      toast({
+        title: 'Contract Not Deployed',
+        description: 'Contract address is not configured.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const amount = kind === 'deposit' ? depositAmount : withdrawAmount;
+    if (!amount || parseFloat(amount) <= 0) {
+      toast({
+        title: 'Invalid Amount',
+        description: 'Please enter a valid amount',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoading(true);
+    setActiveOperation(kind);
+
+    try {
+      // Convert ETH to Wei (1 ETH = 10^18 Wei)
+      const weiAmount = Math.floor(parseFloat(amount) * 1e18);
+
+      console.log(`🔐 Encrypting ${amount} ETH (${weiAmount} Wei) for ${kind}...`);
+
+      // Encrypt using FHE from CDN
+      const { data: encryptedHandle, signature: inputProof } = await encryptUint64(
+        weiAmount,
+        LENDING_POOL_ADDRESS,
+        address
+      );
+
+      console.log('✅ Encryption complete:', {
+        handle: encryptedHandle,
+        proofLength: inputProof.length
+      });
+
+      const signerInstance = await signer;
+
+      const pool = new Contract(LENDING_POOL_ADDRESS, LENDING_POOL_ABI, signerInstance);
+      toast({
+        title: `${kind === 'deposit' ? 'Depositing' : 'Withdrawing'}...`,
+        description: `Processing ${amount} ETH with FHE encryption`,
+      });
+
+      let tx;
+      if (kind === 'deposit') {
+        // Deposit: send ETH with transaction
+        tx = await pool.deposit(encryptedHandle, inputProof, {
+          value: weiAmount.toString()
+        });
+      } else {
+        // Withdraw: provide plaintext amount for ETH transfer
+        tx = await pool.withdraw(encryptedHandle, inputProof, weiAmount.toString());
+      }
+
+      console.log('📤 Transaction sent:', tx.hash);
+
+      toast({
+        title: 'Transaction Submitted',
+        description: `Waiting for confirmation...`,
+      });
+
+      await tx.wait();
+
+      console.log('✅ Transaction confirmed');
+
+      toast({
+        title: 'Success!',
+        description: `${kind === 'deposit' ? 'Deposited' : 'Withdrew'} ${amount} ETH`,
+      });
+
+      // Clear input
+      if (kind === 'deposit') {
+        setDepositAmount('0.01');
+      } else {
+        setWithdrawAmount('0.01');
+      }
+    } catch (error: any) {
+      console.error(`❌ ${kind} failed:`, error);
+      toast({
+        title: 'Transaction Failed',
+        description: error.message || `Failed to ${kind}`,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+      setActiveOperation(null);
+    }
+  };
+
+  return (
+    <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-card overflow-hidden">
+      <Tabs defaultValue="deposit" className="w-full">
+        <TabsList className="w-full grid grid-cols-2 rounded-none border-b border-border bg-muted/30">
+          <TabsTrigger value="deposit" className="rounded-none data-[state=active]:bg-primary-light data-[state=active]:text-primary">
+            <ArrowDownToLine className="w-4 h-4 mr-2" />
+            Deposit
+          </TabsTrigger>
+          <TabsTrigger value="withdraw" className="rounded-none data-[state=active]:bg-accent-light data-[state=active]:text-accent">
+            <ArrowUpFromLine className="w-4 h-4 mr-2" />
+            Withdraw
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="deposit" className="p-6 space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Amount to Deposit
+              </label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  placeholder="0.0"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                  className="text-2xl font-semibold h-16 pr-20 bg-input/50"
+                  disabled={loading}
+                  step="0.001"
+                  min="0"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                  ETH
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-accent-light/50 border border-accent/20 rounded-lg p-4">
+              <div className="flex gap-2 mb-2">
+                <Info className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-foreground/80">
+                  <p className="font-medium mb-1">🔐 FHE Encryption</p>
+                  <p className="text-xs text-muted-foreground">
+                    Your deposit amount is encrypted using Fully Homomorphic Encryption (FHE) before being sent to the blockchain.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {['0.01', '0.05', '0.1', '0.5'].map((amt) => (
+                <Button
+                  key={amt}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDepositAmount(amt)}
+                  className="hover:bg-primary-light hover:text-primary hover:border-primary"
+                  disabled={loading}
+                >
+                  {amt}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => depositOrWithdraw('deposit')}
+              className="w-full h-12 text-base font-semibold bg-gradient-primary hover:opacity-90 transition-opacity shadow-soft"
+              disabled={!address || loading || !fheReady}
+            >
+              {loading && activeOperation === 'deposit' ? (
+                <>
+                  <span className="loading-spinner mr-2"></span>
+                  Depositing...
+                </>
+              ) : !fheReady ? (
+                'Initializing FHE...'
+              ) : (
+                'Deposit ETH'
+              )}
+            </Button>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="withdraw" className="p-6 space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Amount to Withdraw
+              </label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  placeholder="0.0"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  className="text-2xl font-semibold h-16 pr-20 bg-input/50"
+                  disabled={loading}
+                  step="0.001"
+                  min="0"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                  ETH
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-primary-light/50 border border-primary/20 rounded-lg p-4">
+              <div className="flex gap-2 mb-2">
+                <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-foreground/80">
+                  <p className="font-medium mb-1">Private Withdrawal</p>
+                  <p className="text-xs text-muted-foreground">
+                    Withdrawal amounts are encrypted. Only you can decrypt your balance using your private key.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {['0.01', '0.05', '0.1', '0.5'].map((amt) => (
+                <Button
+                  key={amt}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setWithdrawAmount(amt)}
+                  className="hover:bg-accent-light hover:text-accent hover:border-accent"
+                  disabled={loading}
+                >
+                  {amt}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => depositOrWithdraw('withdraw')}
+              className="w-full h-12 text-base font-semibold bg-gradient-accent hover:opacity-90 transition-opacity shadow-soft"
+              disabled={!address || loading || !fheReady}
+            >
+              {loading && activeOperation === 'withdraw' ? (
+                <>
+                  <span className="loading-spinner mr-2"></span>
+                  Withdrawing...
+                </>
+              ) : !fheReady ? (
+                'Initializing FHE...'
+              ) : (
+                'Withdraw ETH'
+              )}
+            </Button>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </Card>
+  );
+};
+
+export default DepositWithdraw;

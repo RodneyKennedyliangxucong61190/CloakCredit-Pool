@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+build/
+.env
+.env.local
+.DS_Store
+*.log
+cache/
+artifacts/
+typechain-types/
+coverage/
+.vscode/
+.idea/
+*.swp
+*.swo
+.cache/

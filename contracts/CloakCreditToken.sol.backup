@@ -1,0 +1,130 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import {FHE, euint64} from "@fhevm/solidity/lib/FHE.sol";
+import {SepoliaConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
+
+/// @title CloakCredit Token - Privacy-Preserving Credit Token
+/// @notice ERC20-like token with fully encrypted balances for enterprise lending
+contract CloakCreditToken is SepoliaConfig {
+    string public constant name = "CloakCredit";
+    string public constant symbol = "CLOAK";
+    uint8 public constant decimals = 6;
+
+    // Encrypted balances
+    mapping(address => euint64) private _balances;
+
+    // Encrypted allowances
+    mapping(address => mapping(address => euint64)) private _allowances;
+
+    // Total supply (encrypted)
+    euint64 private _totalSupply;
+
+    // Admin
+    address public admin;
+
+    // Events
+    event Transfer(address indexed from, address indexed to);
+    event Approval(address indexed owner, address indexed spender);
+    event Minted(address indexed to, uint256 timestamp);
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin");
+        _;
+    }
+
+    constructor() {
+        admin = msg.sender;
+        _totalSupply = FHE.asEuint64(0);
+    }
+
+    /// @notice Get encrypted balance of an address
+    function balanceOf(address account) external view returns (euint64) {
+        return _balances[account];
+    }
+
+    /// @notice Get encrypted allowance
+    function allowance(address owner, address spender) external view returns (euint64) {
+        return _allowances[owner][spender];
+    }
+
+    /// @notice Mint tokens (admin only for testing/faucet)
+    function mint(address to, uint64 amount) external onlyAdmin returns (euint64) {
+        euint64 encAmount = FHE.asEuint64(amount);
+
+        _balances[to] = FHE.add(_balances[to], encAmount);
+        _totalSupply = FHE.add(_totalSupply, encAmount);
+
+        FHE.allowThis(_balances[to]);
+        FHE.allow(_balances[to], to);
+        FHE.allowThis(_totalSupply);
+
+        emit Minted(to, block.timestamp);
+        return _balances[to];
+    }
+
+    /// @notice Faucet for testing - mint 1000 tokens
+    function faucet() external returns (euint64) {
+        return mint(msg.sender, 1_000_000); // 1000 tokens with 6 decimals
+    }
+
+    /// @notice Transfer encrypted amount
+    function transfer(address to, euint64 encAmount) external returns (bool) {
+        require(to != address(0), "Invalid recipient");
+
+        // Check balance >= amount
+        euint64 balance = _balances[msg.sender];
+        FHE.req(FHE.gte(balance, encAmount));
+
+        // Deduct from sender
+        _balances[msg.sender] = FHE.sub(balance, encAmount);
+
+        // Add to recipient
+        _balances[to] = FHE.add(_balances[to], encAmount);
+
+        // Update ACL
+        FHE.allowThis(_balances[msg.sender]);
+        FHE.allow(_balances[msg.sender], msg.sender);
+        FHE.allowThis(_balances[to]);
+        FHE.allow(_balances[to], to);
+
+        emit Transfer(msg.sender, to);
+        return true;
+    }
+
+    /// @notice Approve spender
+    function approve(address spender, euint64 encAmount) external returns (bool) {
+        _allowances[msg.sender][spender] = encAmount;
+
+        FHE.allowThis(encAmount);
+        FHE.allow(encAmount, spender);
+
+        emit Approval(msg.sender, spender);
+        return true;
+    }
+
+    /// @notice Transfer from (with allowance)
+    function transferFrom(address from, address to, euint64 encAmount) external returns (bool) {
+        require(to != address(0), "Invalid recipient");
+
+        euint64 currentAllowance = _allowances[from][msg.sender];
+        FHE.req(FHE.gte(currentAllowance, encAmount));
+        FHE.req(FHE.gte(_balances[from], encAmount));
+
+        // Update allowance
+        _allowances[from][msg.sender] = FHE.sub(currentAllowance, encAmount);
+
+        // Transfer
+        _balances[from] = FHE.sub(_balances[from], encAmount);
+        _balances[to] = FHE.add(_balances[to], encAmount);
+
+        // Update ACL
+        FHE.allowThis(_balances[from]);
+        FHE.allow(_balances[from], from);
+        FHE.allowThis(_balances[to]);
+        FHE.allow(_balances[to], to);
+
+        emit Transfer(from, to);
+        return true;
+    }
+}
