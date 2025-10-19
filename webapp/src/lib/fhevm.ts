@@ -20,24 +20,31 @@ export const initializeFHEVM = async (): Promise<any> => {
     const sdk: any = await import(
       'https://cdn.zama.ai/relayer-sdk-js/0.2.0/relayer-sdk-js.js'
     );
-    const { initSDK, createInstance, SepoliaConfig } = sdk;
-    
+    const { initSDK, createInstance } = sdk;
+
     console.log('[FHE] Initializing WASM...');
     await initSDK();
-    
+
+    // Simplified Sepolia configuration without contract queries
     const config = {
-      ...SepoliaConfig,
-      network: window.ethereum
+      chainId: 11155111,
+      network: window.ethereum,
+      gatewayUrl: 'https://gateway.sepolia.zama.ai'
     };
-    
+
     console.log('[FHE] Creating instance...');
     fheInstance = await createInstance(config);
     console.log('[FHE] ✅ Instance initialized successfully');
-    
+
     return fheInstance;
   } catch (error) {
     console.error('[FHE] ❌ Initialization failed:', error);
-    throw new Error(`FHE initialization failed: ${error}`);
+    // Provide more user-friendly error message
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (errorMsg.includes('getKmsSigners') || errorMsg.includes('BAD_DATA')) {
+      throw new Error('FHE configuration error. Please ensure you are connected to Sepolia testnet.');
+    }
+    throw new Error(`FHE initialization failed: ${errorMsg}`);
   }
 };
 
