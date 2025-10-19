@@ -206,10 +206,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Website**: [Coming Soon]
-- **Documentation**: [View Docs](https://github.com/RodneyKennedyliangxucong61190/CloakCredit-Pool/tree/main/docs)
-- **Twitter**: [Coming Soon]
-- **Discord**: [Coming Soon]
+- **Website**: [https://shadowlend.vercel.app](https://shadowlend.vercel.app)
+- **GitHub**: [View Repository](https://github.com/RodneyKennedyliangxucong61190/CloakCredit-Pool)
+- **Documentation**: [View Docs](https://shadowlend.vercel.app/docs)
+- **Contract**: [View on Etherscan](https://sepolia.etherscan.io/address/0xd674264b7A3c6927581B0786995eb44B5F94F4fC)
 
 ## ⚠️ Disclaimer
 
