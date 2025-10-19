@@ -1,6 +1,6 @@
 import Navbar from '@/components/Navbar';
 import { Card } from '@/components/ui/card';
-import { Shield, Lock, Code, BookOpen, Github, Rocket, Target, Zap, CheckCircle2 } from 'lucide-react';
+import { Shield, Lock, Code, BookOpen, Github, Rocket, Target, Zap, CheckCircle2, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -16,6 +16,26 @@ const Docs = () => {
             Learn how to use ShadowLend's privacy-preserving lending protocol
           </p>
         </div>
+
+        <Card className="p-8 mb-12">
+          <div className="flex items-center gap-3 mb-6">
+            <PlayCircle className="w-8 h-8 text-primary" />
+            <h2 className="text-2xl font-bold">Demo Video</h2>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Watch how ShadowLend works - see encrypted deposits, withdrawals, and privacy-preserving transactions in action.
+          </p>
+          <div className="relative rounded-lg overflow-hidden bg-black/5">
+            <video
+              controls
+              className="w-full rounded-lg"
+              poster="/logo.svg"
+            >
+              <source src="/demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <Card className="p-6 hover:shadow-card transition-shadow cursor-pointer">
