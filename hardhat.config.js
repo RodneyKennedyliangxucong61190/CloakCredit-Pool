@@ -5,14 +5,15 @@ require("dotenv").config();
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
-    version: "0.8.24",
+    version: "0.8.27",
     settings: {
+      evmVersion: "cancun",
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 200
       },
-      evmVersion: "cancun",
-    },
+      viaIR: true
+    }
   },
   networks: {
     sepolia: {
