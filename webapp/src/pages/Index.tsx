@@ -2,35 +2,24 @@ import Navbar from '@/components/Navbar';
 import StatsCard from '@/components/StatsCard';
 import DepositWithdraw from '@/components/DepositWithdraw';
 import BalanceCard from '@/components/BalanceCard';
-import { DollarSign, Users, TrendingUp, Lock } from 'lucide-react';
+import { DollarSign, Users, TrendingUp, Lock, Shield } from 'lucide-react';
 import { useReadContract } from 'wagmi';
 import { LENDING_POOL_ADDRESS, LENDING_POOL_ABI } from '@/config/contracts';
-import { formatEther } from 'viem';
 
 const Index = () => {
+  // getPoolStats returns (activeUsers, interestRate, collateralRatio)
   const { data: poolStats } = useReadContract({
     address: LENDING_POOL_ADDRESS as `0x${string}`,
     abi: LENDING_POOL_ABI,
     functionName: 'getPoolStats',
     query: {
-      refetchInterval: 5000, // Refresh every 5 seconds
-    },
-  });
-
-  const { data: userCount } = useReadContract({
-    address: LENDING_POOL_ADDRESS as `0x${string}`,
-    abi: LENDING_POOL_ABI,
-    functionName: 'getUserCount',
-    query: {
       refetchInterval: 10000,
     },
   });
 
-  const totalValueLocked = poolStats ? formatEther(poolStats[0] as bigint) : '0';
-  const totalBorrowed = poolStats ? formatEther(poolStats[1] as bigint) : '0';
-  const availableLiquidity = poolStats ? formatEther(poolStats[2] as bigint) : '0';
-  const utilizationRate = poolStats ? Number(poolStats[3]) : 0;
-  const activeUsers = userCount ? Number(userCount) : 0;
+  const activeUsers = poolStats ? Number(poolStats[0]) : 0;
+  const interestRate = poolStats ? Number(poolStats[1]) / 100 : 5;
+  const collateralRatio = poolStats ? Number(poolStats[2]) : 150;
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -50,10 +39,10 @@ const Index = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <StatsCard
-            icon={DollarSign}
-            title="Total Value Locked"
-            value={`${parseFloat(totalValueLocked).toFixed(2)} ETH`}
-            change={`${utilizationRate}% utilized`}
+            icon={Shield}
+            title="Privacy Level"
+            value="Full FHE"
+            change="ERC7984 Encrypted"
             gradient
           />
           <StatsCard
@@ -64,14 +53,14 @@ const Index = () => {
           />
           <StatsCard
             icon={TrendingUp}
-            title="Total Borrowed"
-            value={`${parseFloat(totalBorrowed).toFixed(2)} ETH`}
-            change={`${parseFloat(availableLiquidity).toFixed(2)} ETH available`}
+            title="Interest Rate"
+            value={`${interestRate.toFixed(2)}%`}
+            change="Fixed APY"
           />
           <StatsCard
             icon={Lock}
             title="Collateral Ratio"
-            value="150%"
+            value={`${collateralRatio}%`}
             change="Required minimum"
           />
         </div>
