@@ -4,11 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ShadowLend - Privacy-Preserving DeFi Lending</title>
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp" />
+    <link rel="preconnect" href="https://cdn.zama.org" />
+    <title>CloakCredit Pool - Privacy-Preserving DeFi Lending</title>
     <meta name="description" content="Secure, private DeFi lending and borrowing powered by Zama's FHE technology. Earn competitive yields on ETH deposits with complete confidentiality." />
-    <meta name="author" content="ShadowLend" />
+    <meta name="author" content="CloakCredit Pool" />
 
-    <meta property="og:title" content="ShadowLend - Privacy-Preserving DeFi Lending" />
+    <meta property="og:title" content="CloakCredit Pool - Privacy-Preserving DeFi Lending" />
     <meta property="og:description" content="Secure, private DeFi lending powered by Fully Homomorphic Encryption" />
     <meta property="og:type" content="website" />
 
@@ -17,8 +20,12 @@
 
   <body>
     <div id="root"></div>
-    <!-- FHE SDK must be loaded before React app -->
-    <script src="/relayer-sdk-js.umd.cjs"></script>
+    <!-- FHE SDK loaded from Zama CDN -->
+    <script
+      src="https://cdn.zama.org/relayer-sdk-js/0.3.0-5/relayer-sdk-js.umd.cjs"
+      defer
+      crossorigin="anonymous"
+    ></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
